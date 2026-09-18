@@ -8,6 +8,10 @@
 
 # JSON response type + long-lived caching for all routes in /pincode/*
 # (files are regenerated rarely; SWR keeps responses fresh after re-exports)
-pincode/*
+/pincode/*
   Content-Type: application/json
   Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
+  X-Content-Type-Options: nosniff
+
+/pincode/:pincode
+  X-content-description: Details for ":pincode"
