@@ -14,4 +14,4 @@
   X-Content-Type-Options: nosniff
 
 /pincode/:pincode
-  X-content-description: Details for ":pincode"
+  X-content-description: Details for :pincode
