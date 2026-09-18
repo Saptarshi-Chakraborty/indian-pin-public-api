@@ -10,11 +10,10 @@ import path from "path";
 const DEFAULT_BATCH_SIZE: number = 500;
 
 const CONFIG = {
-  BATCH_SIZE: process.env.READ_BATCH_SIZE || DEFAULT_BATCH_SIZE,
+  BATCH_SIZE: parseInt(process.env.READ_BATCH_SIZE || "", 10) || DEFAULT_BATCH_SIZE,
   OUTPUT_DIR: "./dist/pincode", // Target output folder
   DATABASE_URL: process.env.DATABASE_URL as string,
 };
-CONFIG.BATCH_SIZE = parseInt(CONFIG.BATCH_SIZE as string) || DEFAULT_BATCH_SIZE;
 
 // ========================================== //
 
@@ -107,8 +106,6 @@ async function main() {
     const progress = Math.min((processedPins / totalPins) * 100, 100);
     const barLength = 30;
     const filled = Math.round((barLength * progress) / 100);
-    const bar = "█".repeat(filled) - "".padStart(barLength - filled, "-"); // wait, fixed string repeat padding fix:
-    // Safer string fill layout for the bar:
     const visualBar = "█".repeat(filled) + "-".repeat(barLength - filled);
     process.stdout.write(
       `\r[${visualBar}] ${progress.toFixed(1)}% (${processedPins}/${totalPins} PINs)`,
