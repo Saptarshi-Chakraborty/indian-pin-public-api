@@ -1,0 +1,11 @@
+# The headers will be auto applied to routes in Cloudflare Pages
+
+# Cross-Origin Resource Sharing (CORS) headers
+/*
+  Access-Control-Allow-Origin = "*"
+  Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+  Access-Control-Allow-Headers = ""
+
+# Response type as JSON for all routes in /pincode/*
+pincode/*
+  Content-Type = "application/json"
