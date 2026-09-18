@@ -2,10 +2,12 @@
 
 # Cross-Origin Resource Sharing (CORS) headers
 /*
-  Access-Control-Allow-Origin = "*"
-  Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-  Access-Control-Allow-Headers = ""
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+  Access-Control-Allow-Headers: *
 
-# Response type as JSON for all routes in /pincode/*
+# JSON response type + long-lived caching for all routes in /pincode/*
+# (files are regenerated rarely; SWR keeps responses fresh after re-exports)
 pincode/*
-  Content-Type = "application/json"
+  Content-Type: application/json
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
