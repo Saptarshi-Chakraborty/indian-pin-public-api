@@ -2,13 +2,16 @@ import { neon } from "@neondatabase/serverless";
 import Papa from "papaparse";
 import fs from "fs";
 
+const FILE_NAME: string = "indian-pin-codes.csv";
+const FILE_PATH: string = `../data/${FILE_NAME}`;
+
 const sql = neon(process.env.DATABASE_URL!);
 
 async function main() {
-  const filePath = "./indian-pin-codes.csv";
+  const filePath = FILE_PATH;
 
   if (!fs.existsSync(filePath)) {
-    console.error("❌ Error: indian-pin-codes.csv not found in the directory!");
+    console.error(`❌ Error: ${FILE_NAME} not found in the directory!`);
     process.exit(1);
   }
 
@@ -25,7 +28,9 @@ async function main() {
     complete: async (results) => {
       const rows = results.data as any[];
       const totalRows = rows.length;
-      console.log(`🚀 Parsed ${totalRows} records. Starting upload to NeonDB...\n`);
+      console.log(
+        `🚀 Parsed ${totalRows} records. Starting upload to NeonDB...\n`,
+      );
 
       const batchSize = 100; // Increased back slightly for better throughput since errors are caught safely
       let totalInserted = 0;
@@ -41,11 +46,17 @@ async function main() {
 
         batch.forEach((row) => {
           // Safe parsing for coordinates
-          const lat = row.latitude && row.latitude !== "NA" ? parseFloat(row.latitude) : null;
-          const lng = row.longitude && row.longitude !== "NA" ? parseFloat(row.longitude) : null;
+          const lat =
+            row.latitude && row.latitude !== "NA"
+              ? parseFloat(row.latitude)
+              : null;
+          const lng =
+            row.longitude && row.longitude !== "NA"
+              ? parseFloat(row.longitude)
+              : null;
 
           valuePlaceholders.push(
-            `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
+            `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`,
           );
 
           flatValues.push(
@@ -59,7 +70,7 @@ async function main() {
             row.district || null,
             row.statename || null,
             isNaN(lat!) ? null : lat,
-            isNaN(lng!) ? null : lng
+            isNaN(lng!) ? null : lng,
           );
         });
 
@@ -81,28 +92,44 @@ async function main() {
           const errorEntry = {
             batchStartIndex: i,
             error: err.message,
-            records: batch
+            records: batch,
           };
-          fs.appendFileSync(errorLogPath, JSON.stringify(errorEntry, null, 2) + ",\n");
+          fs.appendFileSync(
+            errorLogPath,
+            JSON.stringify(errorEntry, null, 2) + ",\n",
+          );
         }
 
         // Render progress bar
-        const progress = Math.min(((totalInserted + failedRecordsCount) / totalRows) * 100, 100);
+        const progress = Math.min(
+          ((totalInserted + failedRecordsCount) / totalRows) * 100,
+          100,
+        );
         const barLength = 30;
         const filled = Math.round((barLength * progress) / 100);
         const bar = "█".repeat(filled) + "-".repeat(barLength - filled);
-        process.stdout.write(`\r[${bar}] ${progress.toFixed(1)}% (Inserted: ${totalInserted}/${totalRows})`);
+        process.stdout.write(
+          `\r[${bar}] ${progress.toFixed(1)}% (Inserted: ${totalInserted}/${totalRows})`,
+        );
       }
 
       const endTime = performance.now();
-      console.log(`\n\n✨ Upload complete in ${((endTime - startTime) / 1000).toFixed(2)} seconds!`);
+      console.log(
+        `\n\n✨ Upload complete in ${((endTime - startTime) / 1000).toFixed(2)} seconds!`,
+      );
       console.log(`📊 Successfully Inserted: ${totalInserted} records`);
 
       if (failedBatches > 0) {
-        console.log(`⚠️ Completed with ${failedBatches} failed batch(es) (${failedRecordsCount} records).`);
-        console.log(`📝 Offending rows have been saved to '${errorLogPath}' for your review.`);
+        console.log(
+          `⚠️ Completed with ${failedBatches} failed batch(es) (${failedRecordsCount} records).`,
+        );
+        console.log(
+          `📝 Offending rows have been saved to '${errorLogPath}' for your review.`,
+        );
       } else {
-        console.log(`🎉 All records successfully uploaded without a single error!`);
+        console.log(
+          `🎉 All records successfully uploaded without a single error!`,
+        );
       }
     },
     error: (error: any) => {
